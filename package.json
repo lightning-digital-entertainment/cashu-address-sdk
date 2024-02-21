@@ -1,6 +1,6 @@
 {
   "name": "cashu-address-sdk",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "type": "module",
   "main": "dist/cashu-address-sdk.js",
   "types": "dist/main.d.ts",
