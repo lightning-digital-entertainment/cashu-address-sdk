@@ -11,7 +11,7 @@ import { Signer } from "./types";
 import { createRandomString } from "./utils";
 
 export class NsecSigner implements Signer {
-  secretKey: Uint8Array;
+  private secretKey: Uint8Array;
 
   constructor(secretKey: Uint8Array) {
     if (secretKey.length !== 32) {

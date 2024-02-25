@@ -7,7 +7,7 @@ import {
 
 export class NCSDK {
   baseUrl: string;
-  signer: Signer;
+  private signer: Signer;
 
   constructor(baseUrl: string, signer: Signer) {
     this.baseUrl = baseUrl;
