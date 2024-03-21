@@ -37,14 +37,17 @@ export class Nip46Signer implements Signer {
   connectionString: URL;
   signerKey: string;
   relay: string;
+  secret: string;
+  perms: string;
   pool: SimplePool;
 
-  constructor(connectionString: string, clientKey?: Uint8Array) {
+  constructor(connectionString: string, clientKey?: Uint8Array, perms?: string) {
     this.pool = new SimplePool();
     this.clientSecretKey = clientKey ? clientKey : generateSecretKey();
     this.clientPublicKey = getPublicKey(this.clientSecretKey);
     const parsedConnectionString = new URL(connectionString);
     this.connectionString = parsedConnectionString;
+    this.perms = perms || "sign_event:27235"; // default perms
     this.signerKey =
       parsedConnectionString.hostname ||
       parsedConnectionString.pathname.slice(2);
@@ -53,6 +56,7 @@ export class Nip46Signer implements Signer {
       throw new Error("Connection String is missing relay param...");
     }
     this.relay = relay;
+    this.secret = parsedConnectionString.searchParams.get("secret") ?? '';
   }
 
   async signEvent(e: EventTemplate) {
@@ -69,7 +73,7 @@ export class Nip46Signer implements Signer {
     const requestJson = JSON.stringify({
       id: id,
       method: "connect",
-      params: [this.clientPublicKey],
+      params: [this.clientPublicKey, this.secret, this.perms],
     });
     const encryptedRequestJson = await nip04.encrypt(
       this.clientSecretKey,
@@ -88,9 +92,10 @@ export class Nip46Signer implements Signer {
         sub.close();
         rej("Signer request timed out...");
       }, 60000);
+      let authed = false;
       const sub = this.pool.subscribeMany(
         [this.relay],
-        [{ authors: [this.signerKey], "#p": [this.clientPublicKey] }],
+        [{ authors: [this.signerKey], "#p": [this.clientPublicKey], since: Math.floor(Date.now() / 1000 - 10) }],
         {
           onevent: async (e) => {
             try {
@@ -100,6 +105,10 @@ export class Nip46Signer implements Signer {
                 e.content,
               );
               const resultJSON = JSON.parse(decrypted);
+              if (typeof window !== "undefined" && resultJSON.id === id && resultJSON.result === "auth_url") {
+                if (!authed) window.open(resultJSON.error, '_blank', 'width=600,height=800');
+                authed = true;
+              }
               if (resultJSON.id === id && resultJSON.result === "ack") {
                 this.isConnected = true;
                 sub.close();
