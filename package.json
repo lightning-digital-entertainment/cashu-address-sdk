@@ -1,6 +1,6 @@
 {
   "name": "cashu-address-sdk",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "type": "module",
   "main": "dist/cashu-address-sdk.js",
   "types": "dist/main.d.ts",
@@ -11,6 +11,7 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
+    "@types/node": "^20.11.20",
     "typescript": "^5.2.2",
     "vite": "^5.1.0",
     "vite-plugin-dts": "^3.7.2"

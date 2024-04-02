@@ -97,4 +97,21 @@ export class NCSDK {
       return data as { error: boolean; message?: string };
     }
   }
+
+  async setMintUrl(mintUrl: string) {
+    const url = `${this.baseUrl}/api/v1/info/mint`;
+    const method = "PUT";
+    const authTemplate = createAuthTemplate(url, method);
+    const signedAuthEvent = await this.signer.signEvent(authTemplate);
+    const authHeader = createAuthHeader(signedAuthEvent);
+    const res = await authedJsonRequest(url, authHeader, {
+      method: "PUT",
+      body: JSON.stringify({ mintUrl }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      throw new Error(data.message);
+    }
+    return data.data;
+  }
 }
